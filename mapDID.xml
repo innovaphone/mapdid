@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<voicemail>
+<!-- innovaphone xTrans == innovaphone srl kwa 12/2010 -->
+	<function define="Main">
+		<assign out="$pin-ok" value="false" /> 
+		<pbx-getcallinfo out-cgpn="$cgpn" out-cdpn="$cdpn" out-leg2="$leg2" />
+		<event type="timer" name="vbguard">
+	       		<pbx-disc/>
+		</event>
+	        <timer name="vbguard" sec="6"/>   
+		<assign out="$did" value="" /> 
+		<assign out="$pin-ok" value="false" /> 
+		<event type="dtmf" block="false">
+			<pbx-getdtmfdigit out-dtmf="$dtmf" /> 
+			<assign out="$digit-ok" value="false" /> 
+			<switch var="$dtmf">
+				<case equal="#">
+					<assign out="$pin-ok" value="true" /> 
+					<return/>
+    				</case>
+	  		</switch>
+			<lib-strcat string="$did" string2="$dtmf" out-string="$did" /> 
+  		</event>
+		<while notcond="$pin-ok">
+			<assign out="$digit-ok" value="true" /> 
+			<store-get root="" name="silence.$coder" out-url="$ctrl"/>
+	                <pbx-prompt url="$ctrl" sec="4" repeat="true"/>
+			<if cond="$digit-ok">
+				<assign out="$pin-ok" value="true" /> 
+			</if>
+		</while>
+		<call name="Transfer" />
+		<pbx-disc/>
+	</function>  
+	<function define="Transfer">
+		<lib-strcat string="$cdpn" string2="$did" out-string="$res" />
+		<pbx-fwd e164="$res" out-cause="$cause" />
+	</function>  
+</voicemail>
+
+
+<!-- mapping DID calls and PIN codes wiki-src/xml/mapDID 1,0,0,0 (C) innovaphone AG 2010-2011 -->
